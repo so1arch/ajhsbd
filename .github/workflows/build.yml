@@ -1,0 +1,32 @@
+name: Build MicStudio
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish (single self-contained exe)
+        run: >
+          dotnet publish MicStudio.csproj -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          -o publish
+
+      - name: Upload MicStudio.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: MicStudio-win-x64
+          path: publish/MicStudio.exe
